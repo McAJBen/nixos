@@ -35,7 +35,7 @@ curl https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/confi
 # replace the hashedPassword
 # You will be prompted for a new mcajben password
 hashedPassword=$(mkpasswd -m sha-512)
-sed -i 's/HASHED_PASSWORD/$hashedPassword/g' /mnt/etc/nixos/configuration.nix
+sed -i "s/HASHED_PASSWORD/$hashedPassword/g" /mnt/etc/nixos/configuration.nix
 
 # ========== Do the installation ==========
 nixos-install
