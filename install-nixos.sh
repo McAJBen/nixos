@@ -2,7 +2,7 @@
 while true; do
     echo " * This script is only for Legacy Boot (MBR) NOT UEFI (GPT)"
     echo " * This script requires the primary disk be called 'sda', this can be checked by running 'lsblk'"
-    read -p "Ready to Install NixOS? (y/n)" input
+    read -p "Ready to Install NixOS? (y/n)" input < /dev/tty
     case $input in
         [Yy]*)
           unset input
@@ -15,8 +15,8 @@ while true; do
 done
 
 # Prompt for password
-read -s -p "Password: " p1
-read -s -p "Confirm Password: " p2
+read -s -p "Password: " p1 < /dev/tty
+read -s -p "Confirm Password: " p2 < /dev/tty
 if [ "$p1" = "$p2" ]; then
   hashedPassword=$(mkpasswd -m sha-512 "$p1")
   unset p1
@@ -52,7 +52,7 @@ sudo swapon /dev/sda2
 sudo nixos-generate-config --root /mnt
 
 # Load the configuration from github
-sudo curl https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/configuration.nix -o /mnt/etc/nixos/configuration.nix
+sudo curl  -sSf https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/configuration.nix -o /mnt/etc/nixos/configuration.nix
 
 # replace the HASHED_PASSWORD
 sudo sed -i "s~HASHED_PASSWORD~$hashedPassword~g" /mnt/etc/nixos/configuration.nix
