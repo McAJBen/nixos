@@ -1,29 +1,13 @@
 #!/bin/sh
 
-while true; do
-    # Prompt for password
-    read -s -p "Password: " p1 < /dev/tty
-    echo ""
+# Load existing hashedPassword
+hashedPassword=$(sudo cat /etc/shadow | grep -oP "mcajben:\K[^:]*")
 
-    # Validate password was entered
-    if [ "$p1" = "" ]; then
-        echo "Password must be entered"
-        continue
-    fi
-
-    # Prompt for confirmation password
-    read -s -p "Confirm Password: " p2 < /dev/tty
-    echo ""
-
-    # Validate both password are the same
-    if [ "$p1" != "$p2" ]; then
-        echo "Passwords don't match"
-        continue
-    else
-        hashedPassword=$(mkpasswd -m sha-512 "$p1")
-        break
-    fi
-done
+# Validate hashedPassword exists
+if [ "$hashedPassword" = "" ]; then
+    echo "hashedPassword couldn't be retrieved"
+    break
+fi
 
 # Load the latest configuration from github
 sudo curl -sSf https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/configuration.nix -o /etc/nixos/configuration.nix
