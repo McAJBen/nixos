@@ -1,30 +1,46 @@
+#!/bin/sh
+
 # Prompt to confirm
 while true; do
     echo " * This script is only for Legacy Boot (MBR) NOT UEFI (GPT)"
     echo " * This script requires the primary disk be called 'sda', this can be checked by running 'lsblk'"
-    read -p "Ready to Install NixOS? (y/n)" input < /dev/tty
+    read -p "Ready to Install NixOS? (y/n): " input < /dev/tty
+
+    # Validate yes was entered
     case $input in
         [Yy]*)
-          unset input
-          break;;
+            break;;
         [Nn]*)
-          exit;;
+            exit 1;;
         *)
-          echo "Please answer yes or no.";;
+            echo "Please answer yes or no.";;
     esac
 done
 
-# Prompt for password
-read -s -p "Password: " p1 < /dev/tty
-read -s -p "Confirm Password: " p2 < /dev/tty
-if [ "$p1" = "$p2" ]; then
-  hashedPassword=$(mkpasswd -m sha-512 "$p1")
-  unset p1
-  unset p2
-else
-  echo "Passwords don't match"
-  exit
-fi
+while true; do
+    # Prompt for password
+    read -s -p "Password: " p1 < /dev/tty
+    echo ""
+
+    # Validate password was entered
+    if [ "$p1" = "" ]; then
+        echo "Password must be entered"
+        continue
+    fi
+
+    # Prompt for confirmation password
+    read -s -p "Confirm Password: " p2 < /dev/tty
+    echo ""
+
+    # Validate both password are the same
+    if [ "$p1" != "$p2" ]; then
+        echo "Passwords don't match"
+        continue
+    else
+        hashedPassword=$(mkpasswd -m sha-512 "$p1")
+        break
+    fi
+done
 
 # Create a MBR partition table
 sudo parted /dev/sda -- mklabel msdos
@@ -52,12 +68,10 @@ sudo swapon /dev/sda2
 sudo nixos-generate-config --root /mnt
 
 # Load the configuration from github
-sudo curl  -sSf https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/configuration.nix -o /mnt/etc/nixos/configuration.nix
+sudo curl -sSf https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/configuration.nix -o /mnt/etc/nixos/configuration.nix
 
 # replace the HASHED_PASSWORD
 sudo sed -i "s~HASHED_PASSWORD~$hashedPassword~g" /mnt/etc/nixos/configuration.nix
-# remove hashedPassword
-unset hashedPassword
 
 # Do the installation
 sudo nixos-install
