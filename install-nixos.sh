@@ -30,7 +30,7 @@ swapon /dev/sda2
 nixos-generate-config --root /mnt
 
 # Load the configuration from github
-curl https://github.com/mcajben/nixos/blob/main/nixos/configuration.nix -o /mnt/etc/nixos/configuration.nix
+curl https://raw.githubusercontent.com/mcajben/nixos/refs/heads/main/nixos/configuration.nix -o /mnt/etc/nixos/configuration.nix
 
 # replace the hashedPassword
 # You will be prompted for a new mcajben password
